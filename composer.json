@@ -1,0 +1,28 @@
+{
+	"name": "juho-jaakkola/elgg-live_notifier",
+	"description": "Push notifications in Elgg topbar using websockets.",
+	"type": "elgg-plugin",
+	"keywords": [
+		"elgg",
+		"plugin",
+		"notifications",
+		"websockets"
+	],
+	"license": "GPL-2.0",
+	"authors": [
+		{
+			"name": "Juho Jaakkola",
+			"email": "juho.a.jaakkola@gmail.com",
+			"role": "Developer"
+		}
+	],
+	"autoload": {
+        "psr-0": {
+            "LiveNotifier": "classes"
+        }
+    },
+    "require": {
+        "cboden/ratchet": "0.3.*",
+        "react/zmq": "0.2.*|0.3.*"
+    }
+}
