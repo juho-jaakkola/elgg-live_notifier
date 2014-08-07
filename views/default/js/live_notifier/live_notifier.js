@@ -5,118 +5,30 @@
  */
 define(function(require) {
 	var $ = require('jquery');
-	var autobahn = require('autobahn');
-	//var ab = require('autobahn');
 	var elgg = require('elgg');
 
-	/*
-	console.log(ab);
-
-	// WAMP server
-	var wsuri = "ws://localhost:1234";
-
-	var init = function() {
-		ab.connect(wsuri,
-			// WAMP session was established
-			function (session) {
-				// subscribe to topic
-				session.subscribe("http://example.com/event#myevent1",
-					// on event publication callback
-					function (topic, event) {
-						console.log("got event1: " + event);
-					}
-				);
-				// publish event on a topic
-				session.publish("http://example.com/event#myevent1", {a: 23, b: "foobar"});
-			},
-
-			// WAMP session is gone
-			function (code, reason) {
-				console.log(reason);
-			}
-		);
-	};
-	*/
-
-/*
-	var url_segments = elgg.parse_url(elgg.get_site_url());
-	var url = 'ws://' + url_segments.host + ':8080';
-
-	//console.log(url_segments);
-	//console.log(url);
-
-	//AUTOBAHN_DEBUG = true;
-	//autobahn.debug(true, true);
-
-	ab.Session('ws://localhost:1234',
-		function() {
-		  	console.log('Connection established.');
-		},
-		function() {
-		  	console.log('Connection closed.');
-		},
-		{'skipSubprotocolCheck': true}
-	);
-*/
-
-/*
-	console.log(autobahn.version);
-
-
-
-	 //autobahn.connection.close();
-*/
-
-	// AUTOBAHN implementations
-	var conn = new autobahn.Session('ws://localhost:1234',
-		  function(test) {
-		  	console.log(test);
-		  	console.log('Connection established.');
-				conn.subscribe('testCategory', function(topic, data) {
-					 // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
-					 console.log('New article published to category "' + topic + '" : ' + data.title);
-				});
-		  },
-		  function(reason, details) {
-				console.warn('WebSocket connection closed: ' + reason);
-		  },
-		  {'skipSubprotocolCheck': true}
-	 );
-
-	console.log($(conn));
-
-
-	// WEBSOCKETS implementation
-	var chat_connection = function() {
-		var url = 'ws://localhost:8080';
+	var connection = function() {
+		var url_segments = elgg.parse_url(elgg.get_site_url());
+		var url = 'ws://' + url_segments.host + ':1234';
 
 		// TODO Check whether the client supports WebSockets
 		var conn = new WebSocket(url);
+
 		conn.onopen = function(e) {
-			 console.log("Connection established!");
+			console.log("Connection established!");
 
-			message = JSON.stringify([
-				{
-				 	'username': 'test.user',
-				 	'text': 'Hello world!',
-				 	'image_url': elgg.get_site_url() + '/mod/profile/icondirect.php?lastcache=1358256119&joindate=1349703717&guid=42&size=tiny',
-				},
-				{
-				 	'username': 'test.user2',
-				 	'text': 'Hello world 2!',
-				 	'image_url': elgg.get_site_url() + '/mod/profile/icondirect.php?lastcache=1358256119&joindate=1349703717&guid=42&size=tiny',
-				},
-		 	]);
+			// Tell the server who we are and what we want
+			var msg = {
+				guid: elgg.get_logged_in_user_guid(),
+				token: elgg.live_notifier_token,
+				site_guid: elgg.config.site_guid,
+			};
 
-			 conn.send(message);
+			conn.send(JSON.stringify(msg));
 		};
 
 		conn.onmessage = function(e) {
-			console.log(e.data);
-			//return;
-
 			var counter = $('#notifier-new');
-
 			var count = parseInt(counter.html());
 
 			if (isNaN(count)) {
@@ -125,21 +37,46 @@ define(function(require) {
 
 			var data = JSON.parse(e.data);
 
-			console.log(e.data);
-			console.log(data);
+			elgg.ajax("mod/live_notifier/views/default/live_notifier/notification.html", {
+				success: function(html) {
+					// Add the template as part of DOM so it'll be easier to manipulate
+					$('.elgg-list-notifier').prepend(html);
 
-			$.each(data, function(key, notification) {
-				 $('#notifier-popup .elgg-body .elgg-list').prepend(notification.text);
-				 elgg.system_message(notification.text);
-				count++;
+					// The notification text
+					var text = elgg.echo(data.text, [data.subject_name, data.target_name]);
+
+					// We may be on the notifier/all page, so let's make sure we update
+					// contents of both the main list and the popup module
+					var lists = $('.elgg-list-notifier');
+
+					// TODO Is it necessary to add the stuff to the list at all?
+					// Instead we could let them to fetched on demand. Then again
+					// this would cause notifications counter to have an incorrect
+					// value in case some notifications are combined.
+					lists.each(function(key, list) {
+						var note = $(this).children().first();
+
+						// Populate the tempate with the notification data
+						note.find('.elgg-image img').attr('src', data.icon_url);
+						note.find('.elgg-image a').attr('href', data.subject_url);
+						note.find('.elgg-body > .elgg-subtext > a').attr('href', data.target_url).text(text);
+					});
+
+					// Draw attention by displaying it also as a system message
+					elgg.system_message(text);
+				}
 			});
-			console.log(count);
 
+			count++;
 			counter.html(count).removeAttr('hidden');
+
+			$('#notifier-view-all').removeAttr('hidden');
+			$('#notifier-dismiss-all').removeAttr('hidden');
+			$('.notifier-none').attr('hidden', '');
 		};
 	};
 
-	chat_connection();
+	connection();
 
 	var init = function() {
 

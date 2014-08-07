@@ -1,4 +1,7 @@
 <?php
+/**
+ * This can be used to send test data through ZMQ
+ */
 
 require __DIR__ . '/vendor/autoload.php';
 
