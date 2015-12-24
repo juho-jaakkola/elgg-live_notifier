@@ -16,13 +16,8 @@
 			"role": "Developer"
 		}
 	],
-	"autoload": {
-        "psr-0": {
-            "LiveNotifier": "classes"
-        }
-    },
     "require": {
-        "cboden/ratchet": "0.3.*",
-        "react/zmq": "0.2.*|0.3.*"
+        "juho-jaakkola/elgg-notifier",
+        "juho-jaakkola/elgg-pusher"
     }
 }

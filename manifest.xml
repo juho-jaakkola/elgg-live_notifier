@@ -16,4 +16,8 @@
 		<name>notifier</name>
 		<version>1.9</version>
 	</requires>
+	<requires>
+		<type>plugin</type>
+		<name>pusher</name>
+	</requires>
 </plugin_manifest>
