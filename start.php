@@ -67,7 +67,7 @@ function live_notifier_notification_send($hook, $type, $object, $params) {
 	}
 	elgg_set_ignore_access($ia);
 
-	require __DIR__ . '/vendor/autoload.php';
+	require elgg_get_plugins_path() . '/pusher/vendor/autoload.php';
 
 	$context = new ZMQContext();
 	$socket = $context->getSocket(ZMQ::SOCKET_PUSH, 'my pusher');
