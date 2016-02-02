@@ -17,8 +17,8 @@
 		}
 	],
     "require": {
-        "juho-jaakkola/elgg-notifier",
-        "juho-jaakkola/elgg-pusher"
+        "juho-jaakkola/elgg-notifier": "dev-master",
+        "juho-jaakkola/elgg-pusher":  "dev-master"
     },
 	"extra": {
 		"installer-name": "live_notifier"
